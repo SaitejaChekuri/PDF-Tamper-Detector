@@ -76,6 +76,10 @@ Producer: PDFEditorX
 - Document was modified 1059 days after creation, which exceeds the reasonable limit of 1825 days
 - Suspicious editing software detected: PDFEditorX
 ```
+## Sample output
+![image](https://github.com/user-attachments/assets/bca36fb6-3d0d-4509-b51a-af9736d141b5)
+![image](https://github.com/user-attachments/assets/1f1b5b32-5738-4388-8639-d1793c80193a)
+![image](https://github.com/user-attachments/assets/233b506d-0509-4452-b2db-54dc52e48bcd)
 
 ## Project Structure
 
