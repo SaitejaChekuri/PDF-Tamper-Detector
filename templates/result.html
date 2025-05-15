@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis Results - PDF Metadata Analyzer</title>
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i data-feather="file-text"></i> PDF Metadata Analyzer
+            </a>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="card shadow-sm">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">Analysis Results</h4>
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-sm">
+                            <i data-feather="arrow-left"></i> Back to Upload
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-{{ severity_class }} mb-4" role="alert">
+                            <h5 class="alert-heading">
+                                {% if is_suspicious %}
+                                <i data-feather="alert-triangle"></i> Tampering Detected
+                                {% else %}
+                                <i data-feather="check-circle"></i> No Tampering Detected
+                                {% endif %}
+                            </h5>
+                            <p class="mb-0">
+                                {% if is_suspicious %}
+                                The document shows signs of possible tampering or manipulation.
+                                {% else %}
+                                The document metadata appears to be consistent and authentic.
+                                {% endif %}
+                            </p>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h5><i data-feather="file"></i> File Information</h5>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span>Filename:</span>
+                                        <span class="text-truncate ms-2">{{ filename }}</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span>Analysis Time:</span>
+                                        <span>{{ analysis_time }}</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span>Document Status:</span>
+                                        <span class="badge bg-{{ severity_class }}">
+                                            {% if is_suspicious %}Suspicious{% else %}Clean{% endif %}
+                                        </span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5><i data-feather="info"></i> Key Metadata</h5>
+                                <ul class="list-group list-group-flush">
+                                    {% for key in ['CreationDate', 'ModificationDate', 'Author', 'Producer'] %}
+                                        {% if key in metadata %}
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <span>{{ key }}:</span>
+                                            <span class="text-truncate ms-2">{{ metadata[key] }}</span>
+                                        </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+
+                        {% if is_suspicious %}
+                        <div class="mb-4">
+                            <h5><i data-feather="alert-circle"></i> Detected Issues</h5>
+                            <div class="accordion" id="issuesAccordion">
+                                <!-- Date Issues -->
+                                {% if categorized_issues.date_issues %}
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#dateIssues" aria-expanded="true" aria-controls="dateIssues">
+                                            Date Inconsistencies ({{ categorized_issues.date_issues|length }})
+                                        </button>
+                                    </h2>
+                                    <div id="dateIssues" class="accordion-collapse collapse show" data-bs-parent="#issuesAccordion">
+                                        <div class="accordion-body">
+                                            <ul class="list-group list-group-flush">
+                                                {% for issue in categorized_issues.date_issues %}
+                                                <li class="list-group-item">{{ issue }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                <!-- Software Issues -->
+                                {% if categorized_issues.software_issues %}
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button {{ 'collapsed' if categorized_issues.date_issues else '' }}" type="button" data-bs-toggle="collapse" data-bs-target="#softwareIssues" aria-expanded="{{ 'false' if categorized_issues.date_issues else 'true' }}" aria-controls="softwareIssues">
+                                            Suspicious Software ({{ categorized_issues.software_issues|length }})
+                                        </button>
+                                    </h2>
+                                    <div id="softwareIssues" class="accordion-collapse collapse {{ 'show' if not categorized_issues.date_issues else '' }}" data-bs-parent="#issuesAccordion">
+                                        <div class="accordion-body">
+                                            <ul class="list-group list-group-flush">
+                                                {% for issue in categorized_issues.software_issues %}
+                                                <li class="list-group-item">{{ issue }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                <!-- Metadata Issues -->
+                                {% if categorized_issues.metadata_issues %}
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#metadataIssues" aria-expanded="false" aria-controls="metadataIssues">
+                                            Metadata Problems ({{ categorized_issues.metadata_issues|length }})
+                                        </button>
+                                    </h2>
+                                    <div id="metadataIssues" class="accordion-collapse collapse" data-bs-parent="#issuesAccordion">
+                                        <div class="accordion-body">
+                                            <ul class="list-group list-group-flush">
+                                                {% for issue in categorized_issues.metadata_issues %}
+                                                <li class="list-group-item">{{ issue }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                <!-- Integrity Issues -->
+                                {% if categorized_issues.integrity_issues %}
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#integrityIssues" aria-expanded="false" aria-controls="integrityIssues">
+                                            Other Issues ({{ categorized_issues.integrity_issues|length }})
+                                        </button>
+                                    </h2>
+                                    <div id="integrityIssues" class="accordion-collapse collapse" data-bs-parent="#issuesAccordion">
+                                        <div class="accordion-body">
+                                            <ul class="list-group list-group-flush">
+                                                {% for issue in categorized_issues.integrity_issues %}
+                                                <li class="list-group-item">{{ issue }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="mb-4">
+                            <h5><i data-feather="database"></i> All Metadata</h5>
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Field</th>
+                                            <th>Value</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for key, value in metadata.items() %}
+                                        <tr>
+                                            <td class="text-nowrap">{{ key }}</td>
+                                            <td>{{ value }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('index') }}" class="btn btn-primary">
+                                <i data-feather="upload"></i> Analyze Another Document
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="mt-5 py-3 bg-dark">
+        <div class="container text-center">
+            <p class="text-muted mb-0">PDF Metadata Analyzer &copy; 2023</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            feather.replace();
+        });
+    </script>
+</body>
+</html>
