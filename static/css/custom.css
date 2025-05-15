@@ -1,0 +1,66 @@
+/* 
+ * Custom CSS for PDF Metadata Analyzer 
+ * Using minimal custom styling as per guidelines
+ */
+
+/* Add some breathing room to the page */
+body {
+    padding-bottom: 2rem;
+}
+
+/* Style file upload area */
+.custom-file-input:focus ~ .custom-file-label {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Style the accordion for issues */
+.accordion-button:not(.collapsed) {
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+    color: var(--bs-primary);
+}
+
+/* Better handling of long text in tables */
+.table td {
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Mobile responsiveness improvements */
+@media (max-width: 576px) {
+    .table-responsive {
+        max-height: 400px;
+    }
+    
+    .card-header h4, .card-header h5 {
+        font-size: 1.1rem;
+    }
+    
+    .list-group-item {
+        padding: 0.5rem 0.75rem;
+    }
+}
+
+/* Enhance focus visibility for accessibility */
+:focus {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 2px;
+}
+
+/* Make feather icons align better with text */
+.feather {
+    vertical-align: text-bottom;
+    margin-right: 0.25rem;
+}
+
+/* Add fade-in animation for analysis results */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.card {
+    animation: fadeIn 0.3s ease-in-out;
+}
